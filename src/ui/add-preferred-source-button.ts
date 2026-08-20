@@ -25,6 +25,7 @@ import {I18N_STRINGS} from '../i18n/strings';
 import {PreferredSourceButtonOptions} from '../api/preferred-source';
 import {createElement} from '../utils/dom';
 import {getButtonStyles} from './add-preferred-source-button-templates';
+import {getCanonicalUrl} from '../utils/url';
 import {msg} from '../utils/i18n';
 
 export class AddPreferredSourceButton {
@@ -137,6 +138,13 @@ export class AddPreferredSourceButton {
 
   private logImpressionEvent_(): void {
     const eventParams = new EventParams();
+    const canonicalUrl = getCanonicalUrl(this.runtime_.doc());
+    if (canonicalUrl) {
+      eventParams.setCanonicalUrl(canonicalUrl);
+    }
+    if (this.currentStatus_ !== undefined) {
+      eventParams.setAddPreferredSourceStatus(this.currentStatus_);
+    }
     this.runtime_.eventManager().logEvent({
       eventType: AnalyticsEvent.IMPRESSION_ADD_PREFERRED_SOURCES_BUTTON,
       eventOriginator: 1, // SWG_CLIENT
@@ -147,6 +155,10 @@ export class AddPreferredSourceButton {
 
   private logClickEvent_(): void {
     const eventParams = new EventParams();
+    const canonicalUrl = getCanonicalUrl(this.runtime_.doc());
+    if (canonicalUrl) {
+      eventParams.setCanonicalUrl(canonicalUrl);
+    }
     this.runtime_.eventManager().logEvent({
       eventType: AnalyticsEvent.ACTION_ADD_PREFERRED_SOURCES_BUTTON_CLICK,
       eventOriginator: 1, // SWG_CLIENT

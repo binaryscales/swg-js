@@ -115,9 +115,50 @@ describes.realWin('AddPreferredSourceButton', (env) => {
       sandbox.match({
         eventType: AnalyticsEvent.ACTION_ADD_PREFERRED_SOURCES_BUTTON_CLICK,
         isFromUserAction: true,
+        additionalParameters: sandbox.match((params) => {
+          return !!params.getCanonicalUrl();
+        }),
       })
     );
     expect(clickHandler).to.have.been.calledOnce;
+  });
+
+  it('should embed canonical url from link rel=canonical tag in analytics events', () => {
+    const link = win.document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    link.setAttribute('href', 'https://example.com/canonical-article');
+    win.document.head.appendChild(link);
+
+    const button = new AddPreferredSourceButton(runtime, container);
+    button.attach(sandbox.spy());
+
+    expect(eventManagerMock.logEvent).to.have.been.calledWith(
+      sandbox.match({
+        eventType: AnalyticsEvent.IMPRESSION_ADD_PREFERRED_SOURCES_BUTTON,
+        additionalParameters: sandbox.match((params) => {
+          return (
+            params.getCanonicalUrl() === 'https://example.com/canonical-article'
+          );
+        }),
+      })
+    );
+
+    const buttonEl = button['buttonEl_'];
+    buttonEl.dispatchEvent(new win.MouseEvent('click'));
+
+    expect(eventManagerMock.logEvent).to.have.been.calledWith(
+      sandbox.match({
+        eventType: AnalyticsEvent.ACTION_ADD_PREFERRED_SOURCES_BUTTON_CLICK,
+        isFromUserAction: true,
+        additionalParameters: sandbox.match((params) => {
+          return (
+            params.getCanonicalUrl() === 'https://example.com/canonical-article'
+          );
+        }),
+      })
+    );
+
+    win.document.head.removeChild(link);
   });
 
   it('should update to success state when status is SUCCESS', () => {
