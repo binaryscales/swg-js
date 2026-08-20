@@ -229,6 +229,19 @@ describes.realWin('AddPreferredSourceButton', (env) => {
     );
     button.attach(sandbox.spy());
 
+    expect(eventManagerMock.logEvent).to.have.been.calledWith(
+      sandbox.match({
+        eventType: AnalyticsEvent.IMPRESSION_ADD_PREFERRED_SOURCES_BUTTON,
+        additionalParameters: sandbox.match((params) => {
+          return (
+            params.getAddPreferredSourceStatus() ===
+              AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_SUCCESS &&
+            !!params.getCanonicalUrl()
+          );
+        }),
+      })
+    );
+
     const buttonEl = button['buttonEl_'];
     const textEl = button['textEl_'];
 
