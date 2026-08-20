@@ -27,7 +27,7 @@ export function getButtonStyles(isDark: boolean): string {
       box-sizing: border-box;
       line-height: normal;
     }
-    .swg-btn {
+    .publisher-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -55,20 +55,20 @@ export function getButtonStyles(isDark: boolean): string {
         box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
         border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .swg-btn:hover:not([aria-disabled='true']) {
+    .publisher-btn:hover:not([aria-disabled='true']) {
       background-color: ${isDark ? '#303134' : '#f8f9fa'};
       box-shadow: ${isDark
         ? '0 1px 2px 0 rgba(0, 0, 0, 0.3)'
         : '0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15)'};
     }
-    .swg-btn:focus-visible:not([aria-disabled='true']) {
+    .publisher-btn:focus-visible:not([aria-disabled='true']) {
       background-color: ${isDark ? '#35363a' : '#f1f3f4'};
       box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.4);
     }
-    .swg-btn:active:not([aria-disabled='true']) {
+    .publisher-btn:active:not([aria-disabled='true']) {
       background-color: ${isDark ? '#37393b' : '#f1f3f4'};
     }
-    .swg-btn[aria-disabled='true'] {
+    .publisher-btn[aria-disabled='true'] {
       color: ${isDark ? '#80868b' : '#747775'};
       background-color: ${isDark ? '#202124' : '#e1e3e1'};
       border-color: ${isDark ? '#3c4043' : '#e1e3e1'};
@@ -76,14 +76,14 @@ export function getButtonStyles(isDark: boolean): string {
       box-shadow: none;
       pointer-events: none;
     }
-    .swg-logo {
+    .publisher-logo {
       width: 22px;
       height: 22px;
       flex-shrink: 0;
       display: inline-block;
       vertical-align: middle;
     }
-    .swg-btn-text {
+    .publisher-btn-text {
       line-height: 20px;
     }
   `;

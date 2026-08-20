@@ -66,7 +66,8 @@ describes.realWin('AddPreferredSourceButton', (env) => {
 
     button.attach(sandbox.spy());
     expect(button.getShadowRoot()).to.not.be.null;
-    expect(button.getShadowRoot().querySelector('.swg-btn')).to.not.be.null;
+    expect(button.getShadowRoot().querySelector('.publisher-btn')).to.not.be
+      .null;
   });
 
   it('should fallback to global document if container has no ownerDocument', () => {
@@ -130,11 +131,11 @@ describes.realWin('AddPreferredSourceButton', (env) => {
 
     const buttonEl = button['buttonEl_'];
     const textEl = button['textEl_'];
-    const logoWrapper = buttonEl.querySelector('.logo-wrapper');
+    const logoWrapper = buttonEl.querySelector('.publisher-logo-wrapper');
 
     expect(buttonEl.getAttribute('aria-disabled')).to.equal('true');
     expect(textEl.textContent).to.equal('Added to Preferred Sources');
-    expect(logoWrapper.innerHTML).to.include('swg-logo');
+    expect(logoWrapper.innerHTML).to.include('publisher-logo');
 
     // Clicks should be ignored when disabled
     clickHandler.resetHistory();

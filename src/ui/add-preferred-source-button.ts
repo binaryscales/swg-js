@@ -63,7 +63,7 @@ export class AddPreferredSourceButton {
 
     // 2. Build button element.
     const buttonEl = createElement<HTMLButtonElement>(doc, 'button', {
-      'class': 'swg-btn',
+      'class': 'publisher-btn',
       'type': 'button',
       'aria-live': 'polite',
     });
@@ -71,14 +71,14 @@ export class AddPreferredSourceButton {
 
     // 3. Build logo and text nodes.
     const logoWrapper = createElement<HTMLSpanElement>(doc, 'span', {
-      'class': 'logo-wrapper',
+      'class': 'publisher-logo-wrapper',
     });
     logoWrapper.innerHTML = GOOGLE_G_LOGO_SVG;
 
     const textEl = createElement<HTMLSpanElement>(
       doc,
       'span',
-      {'class': 'swg-btn-text'},
+      {'class': 'publisher-btn-text'},
       initialText
     );
     this.textEl_ = textEl;
