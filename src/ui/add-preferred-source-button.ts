@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 The Subscribe with Google Authors. All Rights Reserved.
+ * Copyright 2026 The Subscribe with Google Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,95 +14,144 @@
  * limitations under the License.
  */
 
-import {ActivityIframePort, ActivityPorts} from '../components/activities';
 import {
-  AddPreferredSourceRequest,
   AddPreferredSourceStatus,
-  UpdateAddPreferredSourceButtonRequest,
+  AnalyticsEvent,
+  EventParams,
 } from '../proto/api_messages';
-import {Deps} from '../runtime/deps';
-import {feUrl} from '../runtime/services';
-import {parseUrl} from '../utils/url';
-import {setStyles} from '../utils/style';
+import {ConfiguredRuntime} from '../runtime/runtime';
+import {GOOGLE_G_LOGO_SVG} from '../utils/assets';
+import {I18N_STRINGS} from '../i18n/strings';
+import {PreferredSourceButtonOptions} from '../api/preferred-source';
+import {createElement} from '../utils/dom';
+import {getButtonStyles} from './add-preferred-source-button-templates';
+import {msg} from '../utils/i18n';
 
-export class AddPreferredSourceButtonIframe {
-  private readonly activityPorts_: ActivityPorts;
-  private portPromise_?: Promise<ActivityIframePort>;
+export class AddPreferredSourceButton {
+  private shadow_: ShadowRoot | null = null;
+  private buttonEl_: HTMLButtonElement | null = null;
+  private textEl_: HTMLSpanElement | null = null;
+  private currentStatus_?: AddPreferredSourceStatus;
 
   constructor(
-    private readonly deps_: Deps,
-    private readonly container_: Element,
-    private readonly options_: {lang?: string; theme?: string}
-  ) {
-    this.activityPorts_ = deps_.activities();
+    private readonly runtime_: ConfiguredRuntime,
+    private readonly container_: HTMLElement,
+    private readonly options_: PreferredSourceButtonOptions = {}
+  ) {}
+
+  getShadowRoot(): ShadowRoot | null {
+    return this.shadow_;
   }
 
-  async updateStatus(status: AddPreferredSourceStatus): Promise<void> {
-    if (this.portPromise_) {
-      try {
-        const port = await this.portPromise_;
-        const updateMsg = new UpdateAddPreferredSourceButtonRequest();
-        updateMsg.setStatus(status);
-        port.execute(updateMsg);
-      } catch (e) {
-        void e;
+  attach(clickHandler: () => Promise<boolean>): void {
+    const doc = this.container_.ownerDocument || document;
+    const shadow = this.container_.attachShadow({mode: 'closed'});
+    this.shadow_ = shadow;
+
+    const isDark = this.options_.theme === 'dark';
+    const lang = this.options_.lang || 'en';
+    const initialText = msg(I18N_STRINGS.ADD_PREFERRED_SOURCE_BUTTON, lang);
+
+    // 1. Inject encapsulated shadow style sheet.
+    const styleEl = createElement<HTMLStyleElement>(
+      doc,
+      'style',
+      {},
+      getButtonStyles(isDark)
+    );
+    shadow.appendChild(styleEl);
+
+    // 2. Build button element.
+    const buttonEl = createElement<HTMLButtonElement>(doc, 'button', {
+      'class': 'swg-btn',
+      'type': 'button',
+      'aria-live': 'polite',
+    });
+    this.buttonEl_ = buttonEl;
+
+    // 3. Build logo and text nodes.
+    const logoWrapper = createElement<HTMLSpanElement>(doc, 'span', {
+      'class': 'logo-wrapper',
+    });
+    logoWrapper.innerHTML = GOOGLE_G_LOGO_SVG;
+
+    const textEl = createElement<HTMLSpanElement>(
+      doc,
+      'span',
+      {'class': 'swg-btn-text'},
+      initialText
+    );
+    this.textEl_ = textEl;
+
+    buttonEl.appendChild(logoWrapper);
+    buttonEl.appendChild(textEl);
+    shadow.appendChild(buttonEl);
+
+    // 4. Attach click listener.
+    buttonEl.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (buttonEl.getAttribute('aria-disabled') === 'true') {
+        return;
       }
+      this.logClickEvent_();
+      clickHandler();
+    });
+
+    // 5. Log impression event.
+    this.logImpressionEvent_();
+
+    // 6. If an initial status was set before attach, apply it.
+    if (this.currentStatus_ !== undefined) {
+      this.updateStatus(this.currentStatus_);
     }
   }
 
-  async attach(onResult: () => void): Promise<void> {
-    const doc = this.deps_.doc();
-    const iframe = doc.getWin().document.createElement('iframe');
-    iframe.setAttribute('frameborder', '0');
-    iframe.setAttribute('scrolling', 'no');
-    iframe.setAttribute('title', 'Add Preferred Source');
+  updateStatus(status: AddPreferredSourceStatus): void {
+    this.currentStatus_ = status;
+    const lang = this.options_.lang || 'en';
 
-    // Style container and iframe with absolute positioning matching swg-smart-button.
-    // Setting width 100% and min-height 60px ensures safe vertical clearance.
-    setStyles(this.container_ as HTMLElement, {
-      'position': 'relative',
-      'width': '100%',
-      'min-height': '60px',
+    if (!this.buttonEl_ || !this.textEl_) {
+      return;
+    }
+
+    if (
+      status === AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_SUCCESS ||
+      status ===
+        AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_ALREADY_ADDED
+    ) {
+      this.buttonEl_.setAttribute('aria-disabled', 'true');
+      this.textEl_.textContent = msg(
+        I18N_STRINGS.ADDED_TO_PREFERRED_SOURCES_BUTTON,
+        lang
+      );
+    } else if (
+      status === AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_INELIGIBLE
+    ) {
+      this.buttonEl_.setAttribute('aria-disabled', 'true');
+      this.textEl_.textContent = msg(
+        I18N_STRINGS.ADD_PREFERRED_SOURCE_BUTTON,
+        lang
+      );
+    }
+  }
+
+  private logImpressionEvent_(): void {
+    const eventParams = new EventParams();
+    this.runtime_.eventManager().logEvent({
+      eventType: AnalyticsEvent.IMPRESSION_ADD_PREFERRED_SOURCES_BUTTON,
+      eventOriginator: 1, // SWG_CLIENT
+      isFromUserAction: false,
+      additionalParameters: eventParams,
     });
-    setStyles(iframe, {
-      'opacity': '1',
-      'position': 'absolute',
-      'top': '0',
-      'bottom': '0',
-      'left': '0',
-      'right': '0',
-      'width': '100%',
-      'height': '100%',
-      'border': 'none',
+  }
+
+  private logClickEvent_(): void {
+    const eventParams = new EventParams();
+    this.runtime_.eventManager().logEvent({
+      eventType: AnalyticsEvent.ACTION_ADD_PREFERRED_SOURCES_BUTTON_CLICK,
+      eventOriginator: 1, // SWG_CLIENT
+      isFromUserAction: true,
+      additionalParameters: eventParams,
     });
-
-    this.container_.appendChild(iframe);
-
-    // Provide the full href instead of just host, to capture the exact context
-    const params: {[key: string]: string} = {
-      'origin': parseUrl(doc.getWin().location.href).origin,
-      'source': doc.getWin().location.href,
-    };
-    if (this.options_.theme) {
-      params['theme'] = this.options_.theme;
-    }
-    if (this.options_.lang) {
-      params['hl'] = this.options_.lang;
-    }
-
-    const url = feUrl('/addpreferredsourcebuttoniframe', params);
-
-    try {
-      this.portPromise_ = this.activityPorts_.openIframe(iframe, url, {});
-      const port = await this.portPromise_;
-
-      port.on(AddPreferredSourceRequest, () => {
-        onResult();
-      });
-
-      await port.whenReady();
-    } catch (e) {
-      void e;
-    }
   }
 }

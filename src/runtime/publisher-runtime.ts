@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AddPreferredSourceButtonIframe} from '../ui/add-preferred-source-button-iframe';
+import {AddPreferredSourceButton} from '../ui/add-preferred-source-button';
 import {AddPreferredSourceFlow} from './add-preferred-source-flow';
 import {AddPreferredSourceStatus} from '../proto/api_messages';
 import {ClientTheme} from '../api/subscriptions';
@@ -31,7 +31,7 @@ export class PublisherRuntime {
   private readonly win_: Window;
   private configuredRuntime_?: ConfiguredRuntime;
   private options_: PreferredSourceButtonOptions = {};
-  private readonly buttons_: AddPreferredSourceButtonIframe[] = [];
+  private readonly buttons_: AddPreferredSourceButton[] = [];
   private currentStatus_?: AddPreferredSourceStatus;
 
   constructor(win: Window) {
@@ -74,8 +74,9 @@ export class PublisherRuntime {
     );
   }
 
-  private resolveTheme_(override?: string | null): string {
-    return override || this.options_.theme || 'light';
+  private resolveTheme_(override?: string | null): 'light' | 'dark' {
+    const theme = override || this.options_.theme;
+    return theme === 'dark' ? 'dark' : 'light';
   }
 
   updateAllButtons(status: AddPreferredSourceStatus): void {
@@ -100,14 +101,10 @@ export class PublisherRuntime {
       button.setAttribute('data-initialized', 'true');
       const lang = this.resolveLanguage_(button.getAttribute('data-lang'));
       const theme = this.resolveTheme_(button.getAttribute('data-theme'));
-      const buttonComponent = new AddPreferredSourceButtonIframe(
-        runtime,
-        button,
-        {
-          theme,
-          lang,
-        }
-      );
+      const buttonComponent = new AddPreferredSourceButton(runtime, button, {
+        theme,
+        lang,
+      });
       this.buttons_.push(buttonComponent);
       if (this.currentStatus_ !== undefined) {
         buttonComponent.updateStatus(this.currentStatus_);

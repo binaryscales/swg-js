@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AddPreferredSourceButtonIframe} from '../ui/add-preferred-source-button-iframe';
+import {AddPreferredSourceButton} from '../ui/add-preferred-source-button';
 import {AddPreferredSourceFlow} from './add-preferred-source-flow';
 import {
   AddPreferredSourceResponse,
@@ -120,9 +120,11 @@ describes.realWin('installPublisherRuntime', (env) => {
 
     beforeEach(async () => {
       sandbox
-        .stub(AddPreferredSourceButtonIframe.prototype, 'attach')
+        .stub(AddPreferredSourceButton.prototype, 'attach')
         .callsFake(function () {
-          this.container_.appendChild(win.document.createElement('iframe'));
+          const btn = win.document.createElement('button');
+          btn.className = 'swg-btn';
+          this.container_.appendChild(btn);
           return Promise.resolve();
         });
       toastOpenStub = sandbox.stub(Toast.prototype, 'open').resolves();
@@ -147,7 +149,7 @@ describes.realWin('installPublisherRuntime', (env) => {
       });
     });
 
-    it('should inject iframe for buttons when init is called', async () => {
+    it('should inject button when init is called', async () => {
       const button = win.document.createElement('div');
       button.setAttribute('google-add-preferred-source-btn', '');
       win.document.body.appendChild(button);
@@ -158,7 +160,7 @@ describes.realWin('installPublisherRuntime', (env) => {
       await new Promise((resolve) => setTimeout(resolve, 0));
 
       expect(button.getAttribute('data-initialized')).to.equal('true');
-      expect(button.querySelector('iframe')).to.not.be.null; // Iframe injected
+      expect(button.querySelector('.swg-btn')).to.not.be.null;
     });
 
     it('should parse data-theme and data-lang from button element', async () => {
@@ -169,12 +171,14 @@ describes.realWin('installPublisherRuntime', (env) => {
       win.document.body.appendChild(button);
 
       let capturedOptions;
-      AddPreferredSourceButtonIframe.prototype.attach.restore();
+      AddPreferredSourceButton.prototype.attach.restore();
       sandbox
-        .stub(AddPreferredSourceButtonIframe.prototype, 'attach')
+        .stub(AddPreferredSourceButton.prototype, 'attach')
         .callsFake(function () {
           capturedOptions = this.options_;
-          this.container_.appendChild(win.document.createElement('iframe'));
+          const btn = win.document.createElement('button');
+          btn.className = 'swg-btn';
+          this.container_.appendChild(btn);
           return Promise.resolve();
         });
 
@@ -194,12 +198,14 @@ describes.realWin('installPublisherRuntime', (env) => {
       win.document.body.appendChild(button);
 
       let capturedOptions;
-      AddPreferredSourceButtonIframe.prototype.attach.restore();
+      AddPreferredSourceButton.prototype.attach.restore();
       sandbox
-        .stub(AddPreferredSourceButtonIframe.prototype, 'attach')
+        .stub(AddPreferredSourceButton.prototype, 'attach')
         .callsFake(function () {
           capturedOptions = this.options_;
-          this.container_.appendChild(win.document.createElement('iframe'));
+          const btn = win.document.createElement('button');
+          btn.className = 'swg-btn';
+          this.container_.appendChild(btn);
           return Promise.resolve();
         });
 
@@ -213,7 +219,7 @@ describes.realWin('installPublisherRuntime', (env) => {
 
     it('should call updateStatus on injected buttons if currentStatus_ is already defined', async () => {
       const updateStatusStub = sandbox.stub(
-        AddPreferredSourceButtonIframe.prototype,
+        AddPreferredSourceButton.prototype,
         'updateStatus'
       );
 
@@ -233,7 +239,7 @@ describes.realWin('installPublisherRuntime', (env) => {
       );
     });
 
-    it('should trigger addPreferredSource when button iframe attach callback is invoked', async () => {
+    it('should trigger addPreferredSource when button attach callback is invoked', async () => {
       const button = win.document.createElement('div');
       button.setAttribute('google-add-preferred-source-btn', '');
       win.document.body.appendChild(button);
@@ -241,10 +247,9 @@ describes.realWin('installPublisherRuntime', (env) => {
       api.init({theme: 'dark'});
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(AddPreferredSourceButtonIframe.prototype.attach).to.have.been
-        .called;
+      expect(AddPreferredSourceButton.prototype.attach).to.have.been.called;
       const onResultCallback =
-        AddPreferredSourceButtonIframe.prototype.attach.getCall(0).args[0];
+        AddPreferredSourceButton.prototype.attach.getCall(0).args[0];
 
       AddPreferredSourceFlow.prototype.start.resetHistory();
       const res = await onResultCallback();
@@ -333,7 +338,7 @@ describes.realWin('installPublisherRuntime', (env) => {
 
     it('should update all registered button components when addPreferredSource completes', async () => {
       const updateStatusStub = sandbox.stub(
-        AddPreferredSourceButtonIframe.prototype,
+        AddPreferredSourceButton.prototype,
         'updateStatus'
       );
       const button1 = win.document.createElement('div');
@@ -431,7 +436,7 @@ describes.realWin('installPublisherRuntime', (env) => {
       await new Promise((resolve) => setTimeout(resolve, 0));
 
       const onResultCallback =
-        AddPreferredSourceButtonIframe.prototype.attach.getCall(0).args[0];
+        AddPreferredSourceButton.prototype.attach.getCall(0).args[0];
 
       toastOpenStub.resetHistory();
       await onResultCallback();

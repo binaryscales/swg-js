@@ -14,7 +14,7 @@
   </style>
   <script async defer src="/examples/sample-pub/redirect-to/publisher.js"></script>
 </head>
-<body style="background-color: #333; color: white;">
+<body style="background-color: white; color: #333;">
   <h1>Publisher Button Examples</h1>
   
   <div class="demo-container">
@@ -30,6 +30,21 @@
   <div class="demo-container">
     <h2>3. French (FR), Dark Theme</h2>
     <div google-add-preferred-source-btn data-lang="fr" data-theme="dark"></div>
+  </div>
+
+  <div class="demo-container">
+    <h2>4. Centered Container (width: fit-content; margin: 0 auto;)</h2>
+    <div style="margin: 0 auto; width: fit-content; border: 1px dashed #ccc; padding: 8px;">
+      <div google-add-preferred-source-btn data-lang="en"></div>
+    </div>
+  </div>
+
+  <div class="demo-container">
+    <h2>5. Flex Row / Multi-Button Toolbar</h2>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <button style="padding: 10px 16px; border-radius: 100px; border: 1px solid #1a73e8; background: #1a73e8; color: white; cursor: pointer; font-weight: 500;">Subscribe</button>
+      <span google-add-preferred-source-btn data-lang="en"></span>
+    </div>
   </div>
 
 </body>
