@@ -98,9 +98,7 @@ describes.realWin('AddPreferredSourceButton', (env) => {
     button.attach(sandbox.spy());
 
     const textEl = button['textEl_'];
-    expect(textEl.textContent).to.equal(
-      'Añadir a Fuentes preferidas de Google'
-    );
+    expect(textEl.textContent).to.equal('Añadir fuente preferida en Google');
   });
 
   it('should handle click event, log analytics, and execute callback', () => {
@@ -198,9 +196,7 @@ describes.realWin('AddPreferredSourceButton', (env) => {
     const textEl = button['textEl_'];
 
     expect(buttonEl.getAttribute('aria-disabled')).to.equal('true');
-    expect(textEl.textContent).to.equal(
-      'Zu den bevorzugten Quellen in der Google Suche hinzugefügt'
-    );
+    expect(textEl.textContent).to.equal('Zu bevorzugten Quellen hinzugefügt');
   });
 
   it('should update to disabled state when status is INELIGIBLE', () => {
