@@ -38,8 +38,10 @@ module.exports = {
       [
         'babelify',
         {
-          presets: ['@babel/preset-env'],
-          extensions: ['.js', '.ts'],
+          global: true,
+          ignore: [/\/node_modules\/(?!(@material|lit|@lit|tslib))/],
+          presets: [['@babel/preset-env', {modules: 'commonjs'}]],
+          extensions: ['.js', '.ts', '.mjs'],
         },
       ],
     ],

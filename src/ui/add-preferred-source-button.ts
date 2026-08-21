@@ -20,9 +20,13 @@ import {
   EventParams,
 } from '../proto/api_messages';
 import {ConfiguredRuntime} from '../runtime/runtime';
-import {GOOGLE_G_LOGO_SVG} from '../utils/assets';
+import {GOOGLE_G_LOGO_URL} from '../utils/assets';
 import {I18N_STRINGS} from '../i18n/strings';
 import {PreferredSourceButtonOptions} from '../api/preferred-source';
+import {
+  SWG_OUTLINED_BUTTON_TAG,
+  defineSwgMaterialElements,
+} from './material-web-components';
 import {createElement} from '../utils/dom';
 import {getButtonStyles} from './add-preferred-source-button-templates';
 import {getCanonicalUrl} from '../utils/url';
@@ -30,7 +34,7 @@ import {msg} from '../utils/i18n';
 
 export class AddPreferredSourceButton {
   private shadow_: ShadowRoot | null = null;
-  private buttonEl_: HTMLButtonElement | null = null;
+  private buttonEl_: HTMLElement | null = null;
   private textEl_: HTMLSpanElement | null = null;
   private currentStatus_?: AddPreferredSourceStatus;
 
@@ -38,7 +42,9 @@ export class AddPreferredSourceButton {
     private readonly runtime_: ConfiguredRuntime,
     private readonly container_: HTMLElement,
     private readonly options_: PreferredSourceButtonOptions = {}
-  ) {}
+  ) {
+    defineSwgMaterialElements();
+  }
 
   getShadowRoot(): ShadowRoot | null {
     return this.shadow_;
@@ -62,19 +68,23 @@ export class AddPreferredSourceButton {
     );
     shadow.appendChild(styleEl);
 
-    // 2. Build button element.
-    const buttonEl = createElement<HTMLButtonElement>(doc, 'button', {
-      'class': 'publisher-btn',
-      'type': 'button',
+    // 2. Build Material 3 Outlined Button element.
+    const buttonEl = createElement<HTMLElement>(doc, SWG_OUTLINED_BUTTON_TAG, {
       'aria-live': 'polite',
     });
     this.buttonEl_ = buttonEl;
 
     // 3. Build logo and text nodes.
-    const logoWrapper = createElement<HTMLSpanElement>(doc, 'span', {
-      'class': 'publisher-logo-wrapper',
+    const logoEl = createElement<HTMLImageElement>(doc, 'img', {
+      'class': 'publisher-logo',
+      'slot': 'icon',
+      'src': GOOGLE_G_LOGO_URL,
+      'alt': 'Google',
+      'width': '22',
+      'height': '22',
+      'loading': 'eager',
+      'decoding': 'async',
     });
-    logoWrapper.innerHTML = GOOGLE_G_LOGO_SVG;
 
     const textEl = createElement<HTMLSpanElement>(
       doc,
@@ -84,14 +94,17 @@ export class AddPreferredSourceButton {
     );
     this.textEl_ = textEl;
 
-    buttonEl.appendChild(logoWrapper);
+    buttonEl.appendChild(logoEl);
     buttonEl.appendChild(textEl);
     shadow.appendChild(buttonEl);
 
     // 4. Attach click listener.
     buttonEl.addEventListener('click', (e) => {
       e.preventDefault();
-      if (buttonEl.getAttribute('aria-disabled') === 'true') {
+      if (
+        buttonEl.hasAttribute('disabled') ||
+        buttonEl.getAttribute('aria-disabled') === 'true'
+      ) {
         return;
       }
       this.logClickEvent_();
@@ -120,6 +133,7 @@ export class AddPreferredSourceButton {
       status ===
         AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_ALREADY_ADDED
     ) {
+      this.buttonEl_.setAttribute('disabled', '');
       this.buttonEl_.setAttribute('aria-disabled', 'true');
       this.textEl_.textContent = msg(
         I18N_STRINGS.ADDED_TO_PREFERRED_SOURCES_BUTTON,
@@ -128,6 +142,7 @@ export class AddPreferredSourceButton {
     } else if (
       status === AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_INELIGIBLE
     ) {
+      this.buttonEl_.setAttribute('disabled', '');
       this.buttonEl_.setAttribute('aria-disabled', 'true');
       this.textEl_.textContent = msg(
         I18N_STRINGS.ADD_PREFERRED_SOURCE_BUTTON,

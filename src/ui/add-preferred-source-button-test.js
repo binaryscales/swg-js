@@ -66,8 +66,9 @@ describes.realWin('AddPreferredSourceButton', (env) => {
 
     button.attach(sandbox.spy());
     expect(button.getShadowRoot()).to.not.be.null;
-    expect(button.getShadowRoot().querySelector('.publisher-btn')).to.not.be
-      .null;
+    expect(
+      button.getShadowRoot().querySelector('swg-md-outlined-button')
+    ).to.not.be.null;
   });
 
   it('should fallback to global document if container has no ownerDocument', () => {
@@ -87,8 +88,8 @@ describes.realWin('AddPreferredSourceButton', (env) => {
 
     const shadow = button.getShadowRoot();
     const styleEl = shadow.querySelector('style');
-    expect(styleEl.textContent).to.include('#202124');
-    expect(styleEl.textContent).to.include('#5f6368');
+    expect(styleEl.textContent).to.include('#131314');
+    expect(styleEl.textContent).to.include('#444746');
   });
 
   it('should render localized text for specified language', () => {
@@ -170,11 +171,12 @@ describes.realWin('AddPreferredSourceButton', (env) => {
 
     const buttonEl = button['buttonEl_'];
     const textEl = button['textEl_'];
-    const logoWrapper = buttonEl.querySelector('.publisher-logo-wrapper');
+    const logoEl = buttonEl.querySelector('.publisher-logo');
 
     expect(buttonEl.getAttribute('aria-disabled')).to.equal('true');
     expect(textEl.textContent).to.equal('Added to Preferred Sources');
-    expect(logoWrapper.innerHTML).to.include('publisher-logo');
+    expect(logoEl).to.not.be.null;
+    expect(logoEl.getAttribute('src')).to.include('gstatic.com');
 
     // Clicks should be ignored when disabled
     clickHandler.resetHistory();

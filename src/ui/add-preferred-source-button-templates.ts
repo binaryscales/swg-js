@@ -22,58 +22,51 @@ const css = String.raw;
 export function getButtonStyles(isDark: boolean): string {
   return css`
     :host {
-      display: inline-block;
-      vertical-align: middle;
-      box-sizing: border-box;
-      line-height: normal;
-    }
-    .publisher-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      vertical-align: middle;
       box-sizing: border-box;
-      min-height: 40px;
-      padding-block: 9px;
-      padding-inline: 14px 16px;
-      gap: 8px;
-      border-radius: 100px;
+      line-height: normal;
+
+      --md-outlined-button-outline-width: 1px;
+      --md-outlined-button-outline-color: ${isDark ? '#444746' : '#c4c7c5'};
+      --md-outlined-button-container-color: ${isDark ? '#131314' : '#ffffff'};
+      --md-outlined-button-disabled-container-color: ${isDark ? '#444746' : '#e1e3e1'};
+      --md-outlined-button-disabled-outline-color: ${isDark ? '#444746' : '#e1e3e1'};
+      --md-outlined-button-disabled-outline-opacity: 1;
+      --md-outlined-button-disabled-label-text-color: ${isDark ? '#8e918f' : '#747775'};
+      --md-outlined-button-disabled-label-text-opacity: 1;
+      --md-outlined-button-disabled-icon-opacity: 0.38;
+      --md-outlined-button-label-text-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
+      --md-outlined-button-hover-label-text-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
+      --md-outlined-button-pressed-label-text-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
+      --md-outlined-button-focus-label-text-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
+      --md-outlined-button-hover-state-layer-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
+      --md-outlined-button-pressed-state-layer-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
+      --md-outlined-button-label-text-font: 'Google Sans Text', Roboto, Helvetica, Arial, sans-serif;
+      --md-outlined-button-label-text-size: 14px;
+      --md-outlined-button-label-text-weight: 500;
+      --md-outlined-button-container-shape: 100px;
+      --md-outlined-button-with-leading-icon-leading-space: 14px;
+      --md-outlined-button-with-leading-icon-trailing-space: 16px;
+      --md-outlined-button-container-height: 40px;
+      --md-outlined-button-icon-size: 22px;
+    }
+    swg-md-outlined-button {
+      display: inline-flex;
+      vertical-align: middle;
+      box-sizing: border-box;
+      height: 40px;
       font-family: 'Google Sans Text', Roboto, Helvetica, Arial, sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 0.1px;
-      cursor: pointer;
       white-space: nowrap;
-      user-select: none;
-      -webkit-user-select: none;
-      outline: none;
-      text-decoration: none;
-      border: 1px solid ${isDark ? '#5f6368' : '#c4c7c5'};
-      background-color: ${isDark ? '#202124' : '#ffffff'};
-      color: ${isDark ? '#e8eaed' : '#1f1f1f'};
-      transition:
-        background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      background-color: ${isDark ? '#131314' : '#ffffff'};
+      border-radius: 100px;
     }
-    .publisher-btn:hover:not([aria-disabled='true']) {
-      background-color: ${isDark ? '#303134' : '#f8f9fa'};
-      box-shadow: ${isDark
-        ? '0 1px 2px 0 rgba(0, 0, 0, 0.3)'
-        : '0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15)'};
-    }
-    .publisher-btn:focus-visible:not([aria-disabled='true']) {
-      background-color: ${isDark ? '#35363a' : '#f1f3f4'};
-      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.4);
-    }
-    .publisher-btn:active:not([aria-disabled='true']) {
-      background-color: ${isDark ? '#37393b' : '#f1f3f4'};
-    }
-    .publisher-btn[aria-disabled='true'] {
-      color: ${isDark ? '#80868b' : '#747775'};
-      background-color: ${isDark ? '#202124' : '#e1e3e1'};
-      border-color: ${isDark ? '#3c4043' : '#e1e3e1'};
+    swg-md-outlined-button[disabled],
+    swg-md-outlined-button[aria-disabled='true'] {
+      background-color: ${isDark ? '#444746' : '#e1e3e1'};
       cursor: default;
-      box-shadow: none;
       pointer-events: none;
     }
     .publisher-logo {
@@ -82,6 +75,7 @@ export function getButtonStyles(isDark: boolean): string {
       flex-shrink: 0;
       display: inline-block;
       vertical-align: middle;
+      object-fit: contain;
     }
     .publisher-btn-text {
       line-height: 20px;
