@@ -16,10 +16,73 @@
 
 const css = String.raw;
 
+const LIGHT_THEME = {
+  containerColor: '#ffffff',
+  outlineColor: '#c4c7c5',
+  textColor: '#1f1f1f',
+  disabledContainerColor: '#e1e3e1',
+  disabledOutlineColor: '#e1e3e1',
+  disabledTextColor: '#747775',
+};
+
+const DARK_THEME = {
+  containerColor: '#131314',
+  outlineColor: '#444746',
+  textColor: '#e3e3e3',
+  disabledContainerColor: '#444746',
+  disabledOutlineColor: '#444746',
+  disabledTextColor: '#8e918f',
+};
+
+function renderThemeTokens(theme: typeof LIGHT_THEME): string {
+  return css`
+    --md-outlined-button-outline-width: 1px;
+    --md-outlined-button-outline-color: ${theme.outlineColor};
+    --md-outlined-button-container-color: ${theme.containerColor};
+    --md-outlined-button-disabled-container-color: ${theme.disabledContainerColor};
+    --md-outlined-button-disabled-outline-color: ${theme.disabledOutlineColor};
+    --md-outlined-button-disabled-outline-opacity: 1;
+    --md-outlined-button-disabled-label-text-color: ${theme.disabledTextColor};
+    --md-outlined-button-disabled-label-text-opacity: 1;
+    --md-outlined-button-disabled-icon-opacity: 0.38;
+    --md-outlined-button-label-text-color: ${theme.textColor};
+    --md-outlined-button-hover-label-text-color: ${theme.textColor};
+    --md-outlined-button-pressed-label-text-color: ${theme.textColor};
+    --md-outlined-button-focus-label-text-color: ${theme.textColor};
+    --md-outlined-button-hover-state-layer-color: ${theme.textColor};
+    --md-outlined-button-pressed-state-layer-color: ${theme.textColor};
+  `;
+}
+
 /**
  * Generates the encapsulated Shadow DOM CSS rules.
  */
-export function getButtonStyles(isDark: boolean): string {
+export function getButtonStyles(
+  themeOption?: 'light' | 'dark' | 'auto' | boolean
+): string {
+  const isDark = themeOption === 'dark' || themeOption === true;
+  const isLight = themeOption === 'light' || themeOption === false;
+  const isAuto = !isDark && !isLight;
+
+  const baseTheme = isDark ? DARK_THEME : LIGHT_THEME;
+
+  const autoDarkMedia = isAuto
+    ? css`
+        @media (prefers-color-scheme: dark) {
+          :host {
+            ${renderThemeTokens(DARK_THEME)}
+          }
+          swg-md-outlined-button {
+            background-color: ${DARK_THEME.containerColor};
+          }
+          swg-md-outlined-button[disabled],
+          swg-md-outlined-button[aria-disabled='true'] {
+            background-color: ${DARK_THEME.disabledContainerColor};
+          }
+        }
+      `
+    : '';
+
   return css`
     :host {
       display: inline-flex;
@@ -29,21 +92,8 @@ export function getButtonStyles(isDark: boolean): string {
       box-sizing: border-box;
       line-height: normal;
 
-      --md-outlined-button-outline-width: 1px;
-      --md-outlined-button-outline-color: ${isDark ? '#444746' : '#c4c7c5'};
-      --md-outlined-button-container-color: ${isDark ? '#131314' : '#ffffff'};
-      --md-outlined-button-disabled-container-color: ${isDark ? '#444746' : '#e1e3e1'};
-      --md-outlined-button-disabled-outline-color: ${isDark ? '#444746' : '#e1e3e1'};
-      --md-outlined-button-disabled-outline-opacity: 1;
-      --md-outlined-button-disabled-label-text-color: ${isDark ? '#8e918f' : '#747775'};
-      --md-outlined-button-disabled-label-text-opacity: 1;
-      --md-outlined-button-disabled-icon-opacity: 0.38;
-      --md-outlined-button-label-text-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
-      --md-outlined-button-hover-label-text-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
-      --md-outlined-button-pressed-label-text-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
-      --md-outlined-button-focus-label-text-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
-      --md-outlined-button-hover-state-layer-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
-      --md-outlined-button-pressed-state-layer-color: ${isDark ? '#e3e3e3' : '#1f1f1f'};
+      ${renderThemeTokens(baseTheme)}
+
       --md-outlined-button-label-text-font: 'Google Sans Text', Roboto, Helvetica, Arial, sans-serif;
       --md-outlined-button-label-text-size: 14px;
       --md-outlined-button-label-text-weight: 500;
@@ -57,15 +107,15 @@ export function getButtonStyles(isDark: boolean): string {
       display: inline-flex;
       vertical-align: middle;
       box-sizing: border-box;
-      height: 40px;
+      min-height: 40px;
       font-family: 'Google Sans Text', Roboto, Helvetica, Arial, sans-serif;
       white-space: nowrap;
-      background-color: ${isDark ? '#131314' : '#ffffff'};
+      background-color: ${baseTheme.containerColor};
       border-radius: 100px;
     }
     swg-md-outlined-button[disabled],
     swg-md-outlined-button[aria-disabled='true'] {
-      background-color: ${isDark ? '#444746' : '#e1e3e1'};
+      background-color: ${baseTheme.disabledContainerColor};
       cursor: default;
       pointer-events: none;
     }
@@ -80,5 +130,6 @@ export function getButtonStyles(isDark: boolean): string {
     .publisher-btn-text {
       line-height: 20px;
     }
+    ${autoDarkMedia}
   `;
 }

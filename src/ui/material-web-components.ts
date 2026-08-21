@@ -31,7 +31,7 @@ SwgOutlinedButton.styles = [
       border-radius: var(--_container-shape-start-start);
       vertical-align: middle;
       box-sizing: border-box;
-      height: var(--_container-height, 40px);
+      min-height: var(--_container-height, 40px);
     }
     :host(:is([disabled],[soft-disabled])) {
       --_container-color: var(--md-outlined-button-disabled-container-color, transparent);

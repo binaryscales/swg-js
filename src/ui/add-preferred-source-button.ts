@@ -55,7 +55,6 @@ export class AddPreferredSourceButton {
     const shadow = this.container_.attachShadow({mode: 'closed'});
     this.shadow_ = shadow;
 
-    const isDark = this.options_.theme === 'dark';
     const lang = this.options_.lang || 'en';
     const initialText = msg(I18N_STRINGS.ADD_PREFERRED_SOURCE_BUTTON, lang);
 
@@ -64,7 +63,7 @@ export class AddPreferredSourceButton {
       doc,
       'style',
       {},
-      getButtonStyles(isDark)
+      getButtonStyles(this.options_.theme)
     );
     shadow.appendChild(styleEl);
 
@@ -79,7 +78,8 @@ export class AddPreferredSourceButton {
       'class': 'publisher-logo',
       'slot': 'icon',
       'src': GOOGLE_G_LOGO_URL,
-      'alt': 'Google',
+      'alt': '',
+      'aria-hidden': 'true',
       'width': '22',
       'height': '22',
       'loading': 'eager',

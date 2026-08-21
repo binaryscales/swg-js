@@ -2524,7 +2524,8 @@ describes.realWin('EntitlementsManager', (env) => {
       });
     });
 
-    it('should NOT pingback from other originators', async () => {
+    it('should NOT pingback from other originators', async function () {
+      this.timeout(5000);
       const SKIP = {
         [EventOriginator.UNKNOWN_CLIENT]: 1,
         [EventOriginator.SWG_CLIENT]: 1,
@@ -2546,7 +2547,7 @@ describes.realWin('EntitlementsManager', (env) => {
           if (eventKey == 'UNKNOWN') {
             continue;
           }
-          expectNoPingback(AnalyticsEvent[eventKey], origin);
+          await expectNoPingback(AnalyticsEvent[eventKey], origin);
           fetcherMock.verify();
         }
       }

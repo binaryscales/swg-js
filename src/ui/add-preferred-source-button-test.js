@@ -44,7 +44,7 @@ describes.realWin('AddPreferredSourceButton', (env) => {
     }
   });
 
-  it('should attach shadow DOM and render light theme button by default', () => {
+  it('should attach shadow DOM and render light theme button with auto dark mode by default', () => {
     const button = new AddPreferredSourceButton(runtime, container);
     const clickHandler = sandbox.spy();
     button.attach(clickHandler);
@@ -55,9 +55,18 @@ describes.realWin('AddPreferredSourceButton', (env) => {
       })
     );
 
-    const buttonEl = container.shadowRoot || button['buttonEl_'];
+    const shadow = button.getShadowRoot();
+    const buttonEl = shadow.querySelector('swg-md-outlined-button');
     expect(buttonEl).to.not.be.null;
     expect(buttonEl.textContent).to.include('Add to Preferred Sources');
+
+    const logoEl = shadow.querySelector('.publisher-logo');
+    expect(logoEl).to.not.be.null;
+    expect(logoEl.getAttribute('alt')).to.equal('');
+    expect(logoEl.getAttribute('aria-hidden')).to.equal('true');
+
+    const styleEl = shadow.querySelector('style');
+    expect(styleEl.textContent).to.include('@media (prefers-color-scheme: dark)');
   });
 
   it('should return null for getShadowRoot before attach, and ShadowRoot after attach', () => {
@@ -80,7 +89,7 @@ describes.realWin('AddPreferredSourceButton', (env) => {
     expect(fakeContainer.attachShadow).to.have.been.calledOnce;
   });
 
-  it('should render dark theme styles when theme is dark', () => {
+  it('should render dark theme styles without media query when theme is dark', () => {
     const button = new AddPreferredSourceButton(runtime, container, {
       theme: 'dark',
     });
@@ -90,6 +99,31 @@ describes.realWin('AddPreferredSourceButton', (env) => {
     const styleEl = shadow.querySelector('style');
     expect(styleEl.textContent).to.include('#131314');
     expect(styleEl.textContent).to.include('#444746');
+    expect(styleEl.textContent).to.not.include('@media (prefers-color-scheme: dark)');
+  });
+
+  it('should render explicit light theme styles without media query when theme is light', () => {
+    const button = new AddPreferredSourceButton(runtime, container, {
+      theme: 'light',
+    });
+    button.attach(sandbox.spy());
+
+    const shadow = button.getShadowRoot();
+    const styleEl = shadow.querySelector('style');
+    expect(styleEl.textContent).to.include('#ffffff');
+    expect(styleEl.textContent).to.include('#c4c7c5');
+    expect(styleEl.textContent).to.not.include('@media (prefers-color-scheme: dark)');
+  });
+
+  it('should render auto theme styles with media query when theme is auto', () => {
+    const button = new AddPreferredSourceButton(runtime, container, {
+      theme: 'auto',
+    });
+    button.attach(sandbox.spy());
+
+    const shadow = button.getShadowRoot();
+    const styleEl = shadow.querySelector('style');
+    expect(styleEl.textContent).to.include('@media (prefers-color-scheme: dark)');
   });
 
   it('should render localized text for specified language', () => {
