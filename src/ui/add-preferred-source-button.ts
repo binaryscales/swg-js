@@ -21,13 +21,27 @@ import {
   EventParams,
 } from '../proto/api_messages';
 import {Deps} from '../runtime/deps';
+import {ExperimentFlags} from '../runtime/experiment-flags';
 import {GOOGLE_G_LOGO_IMAGE_DATA} from '../utils/assets';
 import {I18N_STRINGS} from '../i18n/strings';
-import {PreferredSourceButtonOptions} from '../api/preferred-source';
+import {
+  PreferredSourceButtonLabel,
+  PreferredSourceButtonOptions,
+} from '../api/preferred-source';
+import {Translation} from '../i18n/translation';
 import {createElement} from '../utils/dom';
 import {getButtonStyles} from './add-preferred-source-button-templates';
 import {getCanonicalUrl, getHttpOrigin} from '../utils/url';
+import {isExperimentOn} from '../runtime/experiments';
 import {msg} from '../utils/i18n';
+
+const ADD_TO_FAVORITES_STRINGS: {
+  [label in PreferredSourceButtonLabel]: Translation;
+} = {
+  'default': I18N_STRINGS.ADD_TO_FAVORITES_BUTTON,
+  'source': I18N_STRINGS.ADD_SOURCE_TO_FAVORITES_BUTTON,
+  'creator': I18N_STRINGS.ADD_CREATOR_TO_FAVORITES_BUTTON,
+};
 
 export class AddPreferredSourceButton {
   private shadow_: ShadowRoot | null = null;
@@ -50,8 +64,7 @@ export class AddPreferredSourceButton {
     const shadow = this.container_.attachShadow({mode: 'open'});
     this.shadow_ = shadow;
 
-    const lang = this.options_.lang || 'en';
-    const initialText = msg(I18N_STRINGS.ADD_PREFERRED_SOURCE_BUTTON, lang);
+    const initialText = this.getButtonText_(/* isAdded= */ false);
 
     // 1. Configure a11y live region on host container
     this.container_.setAttribute('aria-live', 'polite');
@@ -145,17 +158,12 @@ export class AddPreferredSourceButton {
       return;
     }
 
-    const lang = this.options_.lang || 'en';
-
     if (
       status === AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_SUCCESS ||
       status ===
         AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_ALREADY_ADDED
     ) {
-      const addedText = msg(
-        I18N_STRINGS.ADDED_TO_PREFERRED_SOURCES_BUTTON,
-        lang
-      );
+      const addedText = this.getButtonText_(/* isAdded= */ true);
       this.textEl_.textContent = addedText;
       this.buttonEl_.setAttribute('title', addedText);
       this.buttonEl_.setAttribute('aria-label', addedText);
@@ -176,6 +184,32 @@ export class AddPreferredSourceButton {
    */
   getShadowRoot(): ShadowRoot | null {
     return this.shadow_;
+  }
+
+  /**
+   * Returns the localized button text for the current label and add state.
+   */
+  private getButtonText_(isAdded: boolean): string {
+    const lang = this.options_.lang || 'en';
+    if (
+      !isExperimentOn(
+        this.deps_.win(),
+        ExperimentFlags.ENABLE_FAVORITES_REBRAND
+      )
+    ) {
+      return msg(
+        isAdded
+          ? I18N_STRINGS.ADDED_TO_PREFERRED_SOURCES_BUTTON
+          : I18N_STRINGS.ADD_PREFERRED_SOURCE_BUTTON,
+        lang
+      );
+    }
+    return msg(
+      isAdded
+        ? I18N_STRINGS.ADDED_TO_FAVORITES_BUTTON
+        : ADD_TO_FAVORITES_STRINGS[this.options_.label ?? 'default'],
+      lang
+    );
   }
 
   private logAnalyticsEvent_(eventType: AnalyticsEvent): void {

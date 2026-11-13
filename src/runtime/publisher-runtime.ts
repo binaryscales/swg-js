@@ -33,6 +33,7 @@ import {Doc, resolveDoc} from '../model/doc';
 import {PageConfig} from '../model/page-config';
 import {
   PreferredSourceApi,
+  PreferredSourceButtonLabel,
   PreferredSourceButtonOptions,
 } from '../api/preferred-source';
 import {Toast} from '../ui/toast';
@@ -186,6 +187,13 @@ export class PublisherRuntime implements Deps {
     return 'light';
   }
 
+  private resolveLabel_(override: string | null): PreferredSourceButtonLabel {
+    const label =
+      override?.trim().toLowerCase() ||
+      this.options_.label?.trim().toLowerCase();
+    return label === 'source' || label === 'creator' ? label : 'default';
+  }
+
   // --- Public API Methods ---
 
   /**
@@ -221,6 +229,7 @@ export class PublisherRuntime implements Deps {
       const buttonComponent = new AddPreferredSourceButton(this, button, {
         theme,
         lang,
+        label: this.resolveLabel_(button.getAttribute('data-label')),
       });
       this.buttons_.push(buttonComponent);
       if (this.currentStatus_ !== undefined) {

@@ -30,6 +30,11 @@ export enum ExperimentFlags {
    * Experiment flag to enable gisInterop via experiment.
    */
   ENABLE_GIS_INTEROP = 'enable-gis-interop',
+
+  /**
+   * Experiment flag for rendering Favorites copy on the Publisher button.
+   */
+  ENABLE_FAVORITES_REBRAND = 'enable-favorites-rebrand',
 }
 
 /**

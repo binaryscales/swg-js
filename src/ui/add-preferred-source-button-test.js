@@ -18,7 +18,9 @@ import {AddPreferredSourceButton} from './add-preferred-source-button';
 import {AddPreferredSourceStatus, AnalyticsEvent} from '../proto/api_messages';
 import {ClientEventManager} from '../runtime/client-event-manager';
 import {GOOGLE_G_LOGO_IMAGE_DATA} from '../utils/assets';
+import {I18N_STRINGS} from '../i18n/strings';
 import {resolveDoc} from '../model/doc';
+import {setExperimentsStringForTesting} from '../runtime/experiments';
 
 describes.realWin('AddPreferredSourceButton', (env) => {
   let win;
@@ -45,6 +47,7 @@ describes.realWin('AddPreferredSourceButton', (env) => {
   });
 
   afterEach(() => {
+    setExperimentsStringForTesting('');
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
@@ -392,5 +395,202 @@ describes.realWin('AddPreferredSourceButton', (env) => {
     expect(() => {
       button.attach(sandbox.spy());
     }).to.not.throw();
+  });
+
+  describe('Favorites rebrand', () => {
+    function getTexts(button) {
+      const shadow = button.getShadowRoot();
+      const buttonEl = shadow.querySelector('publisher-md-outlined-button');
+      return {
+        text: shadow.querySelector('.publisher-btn-text').textContent,
+        title: buttonEl.getAttribute('title'),
+        ariaLabel: buttonEl.getAttribute('aria-label'),
+      };
+    }
+
+    function expectTexts(button, expected) {
+      expect(getTexts(button)).to.deep.equal({
+        text: expected,
+        title: expected,
+        ariaLabel: expected,
+      });
+    }
+
+    function expectSoftDisabled(button, disabled) {
+      const buttonEl = button
+        .getShadowRoot()
+        .querySelector('publisher-md-outlined-button');
+      expect(buttonEl.getAttribute('aria-disabled')).to.equal(
+        disabled ? 'true' : null
+      );
+      expect(buttonEl.hasAttribute('soft-disabled')).to.equal(disabled);
+    }
+
+    it('defines canonical US English Favorites strings', () => {
+      expect(I18N_STRINGS.ADD_TO_FAVORITES_BUTTON.en).to.equal(
+        'Add to favorites'
+      );
+      expect(I18N_STRINGS.ADD_SOURCE_TO_FAVORITES_BUTTON.en).to.equal(
+        'Add source to favorites'
+      );
+      expect(I18N_STRINGS.ADD_CREATOR_TO_FAVORITES_BUTTON.en).to.equal(
+        'Add creator to favorites'
+      );
+      expect(I18N_STRINGS.ADDED_TO_FAVORITES_BUTTON.en).to.equal(
+        'Added to favorites'
+      );
+    });
+
+    describe('flag off', () => {
+      for (const label of [undefined, 'default', 'source', 'creator']) {
+        it(`renders legacy copy for label=${label}`, () => {
+          const button = new AddPreferredSourceButton(deps, container, {
+            lang: 'en',
+            label,
+          });
+          button.attach(sandbox.spy());
+          expectTexts(button, 'Add to Preferred Sources');
+
+          button.updateStatus(
+            AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_SUCCESS
+          );
+          expectTexts(button, 'Added to Preferred Sources');
+        });
+      }
+
+      it('renders localized legacy copy for es and de', () => {
+        const esButton = new AddPreferredSourceButton(deps, container, {
+          lang: 'es',
+          label: 'source',
+        });
+        esButton.attach(sandbox.spy());
+        expectTexts(esButton, I18N_STRINGS.ADD_PREFERRED_SOURCE_BUTTON.es);
+
+        const deContainer = doc.createElement('div');
+        doc.body.appendChild(deContainer);
+        const deButton = new AddPreferredSourceButton(deps, deContainer, {
+          lang: 'de',
+          label: 'creator',
+        });
+        deButton.attach(sandbox.spy());
+        deButton.updateStatus(
+          AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_ALREADY_ADDED
+        );
+        expectTexts(
+          deButton,
+          I18N_STRINGS.ADDED_TO_PREFERRED_SOURCES_BUTTON.de
+        );
+        deContainer.remove();
+      });
+    });
+
+    describe('flag on', () => {
+      beforeEach(() => {
+        setExperimentsStringForTesting('enable-favorites-rebrand');
+      });
+
+      const LABEL_TEXTS = [
+        [undefined, 'Add to favorites'],
+        ['default', 'Add to favorites'],
+        ['source', 'Add source to favorites'],
+        ['creator', 'Add creator to favorites'],
+      ];
+
+      for (const [label, expected] of LABEL_TEXTS) {
+        it(`renders "${expected}" on attach for label=${label}`, () => {
+          const button = new AddPreferredSourceButton(deps, container, {
+            lang: 'en',
+            label,
+          });
+          button.attach(sandbox.spy());
+          expectTexts(button, expected);
+          expectSoftDisabled(button, false);
+        });
+
+        it(`keeps "${expected}" and soft-disables on INELIGIBLE for label=${label}`, () => {
+          const button = new AddPreferredSourceButton(deps, container, {
+            lang: 'en',
+            label,
+          });
+          button.attach(sandbox.spy());
+          button.updateStatus(
+            AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_INELIGIBLE
+          );
+          expectTexts(button, expected);
+          expectSoftDisabled(button, true);
+        });
+
+        for (const status of [
+          AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_ALREADY_ADDED,
+          AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_SUCCESS,
+        ]) {
+          it(`renders "Added to favorites" on status ${status} for label=${label}`, () => {
+            const button = new AddPreferredSourceButton(deps, container, {
+              lang: 'en',
+              label,
+            });
+            button.attach(sandbox.spy());
+            button.updateStatus(status);
+            expectTexts(button, 'Added to favorites');
+            expectSoftDisabled(button, true);
+          });
+        }
+      }
+
+      it('leaves the button unchanged on UNSPECIFIED status', () => {
+        const button = new AddPreferredSourceButton(deps, container, {
+          lang: 'en',
+          label: 'source',
+        });
+        button.attach(sandbox.spy());
+        button.updateStatus(
+          AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_UNSPECIFIED
+        );
+        expectTexts(button, 'Add source to favorites');
+        expectSoftDisabled(button, false);
+      });
+
+      it('applies a pre-attach ALREADY_ADDED status with Favorites copy', () => {
+        const button = new AddPreferredSourceButton(deps, container);
+        button.updateStatus(
+          AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_ALREADY_ADDED
+        );
+        button.attach(sandbox.spy());
+        expectTexts(button, 'Added to favorites');
+        expectSoftDisabled(button, true);
+      });
+
+      it('falls back to canonical English for es and de until translations land', () => {
+        for (const lang of ['es', 'de']) {
+          const langContainer = doc.createElement('div');
+          doc.body.appendChild(langContainer);
+          const button = new AddPreferredSourceButton(deps, langContainer, {
+            lang,
+            label: 'creator',
+          });
+          button.attach(sandbox.spy());
+          expectTexts(
+            button,
+            I18N_STRINGS.ADD_CREATOR_TO_FAVORITES_BUTTON[lang] ??
+              'Add creator to favorites'
+          );
+          langContainer.remove();
+        }
+      });
+    });
+
+    it('re-evaluates the flag on updateStatus', () => {
+      const button = new AddPreferredSourceButton(deps, container, {
+        lang: 'en',
+      });
+      button.attach(sandbox.spy());
+      expectTexts(button, 'Add to Preferred Sources');
+
+      setExperimentsStringForTesting('enable-favorites-rebrand');
+      button.updateStatus(
+        AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_SUCCESS
+      );
+      expectTexts(button, 'Added to favorites');
+    });
   });
 });

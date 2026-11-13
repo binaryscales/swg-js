@@ -79,14 +79,15 @@ Configurable attributes:
 - `google-add-preferred-source-btn`: Marks the element for button rendering.
 - `data-lang`: Sets the button and dialog language using a BCP-47 language tag (defaults to `init({lang})`, `navigator.language`, `<html lang>`, or `'en'`).
 - `data-theme`: Sets the theme to `'light'` (default), `'dark'`, or `'auto'`.
+- `data-label`: Sets the button label variant to `'default'` (default), `'source'`, or `'creator'` (defaults to `init({label})`). Unrecognized values use `'default'`.
 
 ## APIs
 
 The [PreferredSourceApi](../src/api/preferred-source.ts) provides two methods:
 
-- `init(options?)`: Merges default `lang` and `theme` options and initializes any uninitialized `[google-add-preferred-source-btn]` elements currently in the DOM.
+- `init(options?)`: Merges default `lang`, `theme`, and `label` options and initializes any uninitialized `[google-add-preferred-source-btn]` elements currently in the DOM.
   ```js
-  preferredSource.init({lang: 'en', theme: 'light'});
+  preferredSource.init({lang: 'en', theme: 'light', label: 'default'});
   ```
 - `addPreferredSource()`: Starts the Preferred Sources flow directly.
   ```js

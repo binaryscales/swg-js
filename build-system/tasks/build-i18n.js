@@ -30,7 +30,9 @@ async function buildI18nStrings() {
     const xml = await fs.readFile(xlbDir + '/' + xlbFile, 'utf8');
     const $ = cheerio.load(xml);
     let locale = $('localizationbundle').attr('locale').toLocaleLowerCase();
-    if (locale.startsWith('en-')) {
+    // US English is the default `'en'`; other regional locales (e.g. `en-GB`)
+    // keep their own key.
+    if (locale === 'en-us') {
       locale = 'en';
     }
     for (let $msg of $('msg').toArray()) {

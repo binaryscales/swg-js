@@ -26,6 +26,7 @@ import {AnalyticsService} from './analytics-service';
 import {ClientEventManager} from './client-event-manager';
 import {PublisherRuntime, installPublisherRuntime} from './publisher-runtime';
 import {Toast} from '../ui/toast';
+import {setExperimentsStringForTesting} from './experiments';
 
 describes.realWin('installPublisherRuntime', (env) => {
   let win;
@@ -297,6 +298,55 @@ describes.realWin('installPublisherRuntime', (env) => {
     button.remove();
   });
 
+  describe('Favorites rebrand rendering', () => {
+    beforeEach(() => {
+      sandbox.stub(ActivityPorts.prototype, 'openIframe').resolves({
+        on: sandbox.stub(),
+        whenReady: () => Promise.resolve(),
+        execute: sandbox.spy(),
+      });
+    });
+
+    afterEach(() => {
+      setExperimentsStringForTesting('');
+    });
+
+    function renderButtonText(dataLabel, initOptions) {
+      const button = win.document.createElement('div');
+      button.setAttribute('google-add-preferred-source-btn', '');
+      button.setAttribute('data-lang', 'en');
+      button.setAttribute('data-label', dataLabel);
+      win.document.body.appendChild(button);
+      win.PREFERRED_SOURCE = undefined;
+      installPublisherRuntime(win, {autoStart: false}).init(initOptions);
+      const text = button.shadowRoot.querySelector(
+        '.publisher-btn-text'
+      ).textContent;
+      button.remove();
+      return text;
+    }
+
+    it('renders the resolved label when the flag is on', () => {
+      setExperimentsStringForTesting('enable-favorites-rebrand');
+      expect(renderButtonText('Creator', {label: 'source'})).to.equal(
+        'Add creator to favorites'
+      );
+    });
+
+    it('renders the init label when data-label is blank and the flag is on', () => {
+      setExperimentsStringForTesting('enable-favorites-rebrand');
+      expect(renderButtonText(' ', {label: 'source'})).to.equal(
+        'Add source to favorites'
+      );
+    });
+
+    it('renders legacy copy regardless of label when the flag is off', () => {
+      expect(renderButtonText('creator', {label: 'source'})).to.equal(
+        'Add to Preferred Sources'
+      );
+    });
+  });
+
   it('should return defensive fallback dummy object if PREFERRED_SOURCE is initialized without an api property', () => {
     win.PREFERRED_SOURCE = {};
     const api = installPublisherRuntime(win);
@@ -470,6 +520,76 @@ describes.realWin('installPublisherRuntime', (env) => {
       expect(capturedButtonOptions).to.not.be.undefined;
       expect(capturedButtonOptions.theme).to.equal('light');
       expect(capturedButtonOptions.lang).to.equal('fr');
+    });
+
+    describe('label resolution', () => {
+      function initButtonWithLabel(dataLabel, initOptions) {
+        const button = win.document.createElement('div');
+        button.setAttribute('google-add-preferred-source-btn', '');
+        if (dataLabel !== undefined) {
+          button.setAttribute('data-label', dataLabel);
+        }
+        win.document.body.appendChild(button);
+        api.init(initOptions);
+        return capturedButtonOptions.label;
+      }
+
+      it('defaults to "default" without data-label or init label', () => {
+        expect(initButtonWithLabel(undefined, undefined)).to.equal('default');
+      });
+
+      for (const label of ['default', 'source', 'creator']) {
+        it(`uses data-label="${label}"`, () => {
+          expect(initButtonWithLabel(label, undefined)).to.equal(label);
+        });
+
+        it(`uses init({label: '${label}'}) without data-label`, () => {
+          expect(initButtonWithLabel(undefined, {label})).to.equal(label);
+        });
+      }
+
+      it('prioritizes non-empty data-label over init label', () => {
+        expect(initButtonWithLabel('creator', {label: 'source'})).to.equal(
+          'creator'
+        );
+      });
+
+      it('normalizes data-label case and whitespace', () => {
+        expect(initButtonWithLabel('  SoUrCe \n', undefined)).to.equal(
+          'source'
+        );
+      });
+
+      it('normalizes init label case and whitespace', () => {
+        expect(initButtonWithLabel(undefined, {label: ' CREATOR '})).to.equal(
+          'creator'
+        );
+      });
+
+      for (const empty of ['', '   ']) {
+        it(`falls through empty data-label "${empty}" to init label`, () => {
+          expect(initButtonWithLabel(empty, {label: 'creator'})).to.equal(
+            'creator'
+          );
+        });
+      }
+
+      it('falls back to "default" for an unknown data-label even when init label is set', () => {
+        expect(initButtonWithLabel('publisher', {label: 'source'})).to.equal(
+          'default'
+        );
+      });
+
+      it('falls back to "default" for an unknown init label', () => {
+        expect(initButtonWithLabel(undefined, {label: 'unknown'})).to.equal(
+          'default'
+        );
+      });
+
+      it('keeps the init label for buttons initialized by later init calls', () => {
+        initButtonWithLabel(undefined, {label: 'source'});
+        expect(initButtonWithLabel(undefined, undefined)).to.equal('source');
+      });
     });
 
     it('should call updateStatus on injected buttons if currentStatus_ is already defined', () => {

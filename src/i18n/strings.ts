@@ -1019,4 +1019,16 @@ export const I18N_STRINGS = {
     'zh-hk': '你之前已註冊。',
     'zh-tw': '你先前已訂閱。',
   },
+  'ADD_TO_FAVORITES_BUTTON': {
+    'en': 'Add to favorites',
+  },
+  'ADD_SOURCE_TO_FAVORITES_BUTTON': {
+    'en': 'Add source to favorites',
+  },
+  'ADD_CREATOR_TO_FAVORITES_BUTTON': {
+    'en': 'Add creator to favorites',
+  },
+  'ADDED_TO_FAVORITES_BUTTON': {
+    'en': 'Added to favorites',
+  },
 };

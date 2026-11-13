@@ -63,6 +63,7 @@ module.exports = {
           'logging-audience-activity',
           'disable-desktop-miniprompt',
           'background_click_behavior_experiment',
+          'enable-favorites-rebrand',
         ],
       },
       '@nightwatch/vrt': {
