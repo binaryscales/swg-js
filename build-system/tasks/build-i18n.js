@@ -30,8 +30,8 @@ async function buildI18nStrings() {
     const xml = await fs.readFile(xlbDir + '/' + xlbFile, 'utf8');
     const $ = cheerio.load(xml);
     let locale = $('localizationbundle').attr('locale').toLocaleLowerCase();
-    // US English is the default `'en'`; other regional locales (e.g. `en-GB`)
-    // keep their own key.
+    // US English is the default `'en'`; other regional English locales (e.g.
+    // `en-GB`) keep their own key.
     if (locale === 'en-us') {
       locale = 'en';
     }
@@ -43,6 +43,28 @@ async function buildI18nStrings() {
       }
       localesPerMessage[name][locale] = $msg.html();
     }
+  }
+  const messagesMissingEn = [];
+  for (const [name, translations] of Object.entries(localesPerMessage)) {
+    if (!('en' in translations)) {
+      messagesMissingEn.push(name);
+      continue;
+    }
+    // Regional English only needs an entry where it differs from `'en'`;
+    // `msg()` falls back from e.g. `en-gb` to `en`.
+    for (const locale of Object.keys(translations)) {
+      if (
+        locale.startsWith('en-') &&
+        translations[locale] === translations.en
+      ) {
+        delete translations[locale];
+      }
+    }
+  }
+  if (messagesMissingEn.length) {
+    throw new Error(
+      `Missing 'en' (locale="en-US") translation for: ${messagesMissingEn.join(', ')}`
+    );
   }
   const js = `
 /**
@@ -66,7 +88,7 @@ async function buildI18nStrings() {
 
 export const I18N_STRINGS = ${JSON.stringify(localesPerMessage, null, 2)};
 `;
-  fs.writeFile(__dirname + '/../../src/i18n/strings.ts', js);
+  await fs.writeFile(__dirname + '/../../src/i18n/strings.ts', js);
 }
 
 buildI18nStrings();

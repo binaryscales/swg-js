@@ -560,8 +560,8 @@ describes.realWin('AddPreferredSourceButton', (env) => {
         expectSoftDisabled(button, true);
       });
 
-      it('falls back to canonical English for es and de until translations land', () => {
-        for (const lang of ['es', 'de']) {
+      it('falls back to canonical English for unsupported languages', () => {
+        for (const lang of ['xx', 'xx-YY']) {
           const langContainer = doc.createElement('div');
           doc.body.appendChild(langContainer);
           const button = new AddPreferredSourceButton(deps, langContainer, {
@@ -569,11 +569,7 @@ describes.realWin('AddPreferredSourceButton', (env) => {
             label: 'creator',
           });
           button.attach(sandbox.spy());
-          expectTexts(
-            button,
-            I18N_STRINGS.ADD_CREATOR_TO_FAVORITES_BUTTON[lang] ??
-              'Add creator to favorites'
-          );
+          expectTexts(button, 'Add creator to favorites');
           langContainer.remove();
         }
       });
