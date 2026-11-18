@@ -552,7 +552,7 @@ describes.realWin('AudienceActionIframeFlow', (env) => {
     expect(toast).not.to.be.null;
     expect(toast.src_).to.contain('flavor=custom');
     expect(decodeURI(toast.src_)).to.contain(
-      'Sign-up failed. Try signing up again.'
+      'Signup failed. Try signing up again.'
     );
   });
 

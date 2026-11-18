@@ -560,6 +560,38 @@ describes.realWin('AddPreferredSourceButton', (env) => {
         expectSoftDisabled(button, true);
       });
 
+      it('renders localized Favorites copy for es, fr, and en-GB', () => {
+        const esButton = new AddPreferredSourceButton(deps, container, {
+          lang: 'es',
+          label: 'source',
+        });
+        esButton.attach(sandbox.spy());
+        expectTexts(esButton, I18N_STRINGS.ADD_SOURCE_TO_FAVORITES_BUTTON.es);
+
+        const frContainer = doc.createElement('div');
+        doc.body.appendChild(frContainer);
+        const frButton = new AddPreferredSourceButton(deps, frContainer, {
+          lang: 'fr',
+          label: 'creator',
+        });
+        frButton.attach(sandbox.spy());
+        expectTexts(frButton, I18N_STRINGS.ADD_CREATOR_TO_FAVORITES_BUTTON.fr);
+        frContainer.remove();
+
+        const gbContainer = doc.createElement('div');
+        doc.body.appendChild(gbContainer);
+        const gbButton = new AddPreferredSourceButton(deps, gbContainer, {
+          lang: 'en-GB',
+        });
+        gbButton.attach(sandbox.spy());
+        expectTexts(gbButton, 'Add to favourites');
+        gbButton.updateStatus(
+          AddPreferredSourceStatus.ADD_PREFERRED_SOURCE_STATUS_SUCCESS
+        );
+        expectTexts(gbButton, 'Added to favourites');
+        gbContainer.remove();
+      });
+
       it('falls back to canonical English for unsupported languages', () => {
         for (const lang of ['xx', 'xx-YY']) {
           const langContainer = doc.createElement('div');
